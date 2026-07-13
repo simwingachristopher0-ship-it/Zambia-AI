@@ -3,52 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zambia AI Super App</title>
+<title>Zambia AI</title>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-  body { background: #000; color: #e3e3e3; height: 100vh; display: flex; flex-direction: column; }
+  body { background: linear-gradient(to bottom, #ff8c00 0%, #ffffff 100%); min-height: 100vh; display: flex; flex-direction: column; }
 
-.tools { display: flex; gap: 10px; padding: 12px; overflow-x: auto; background: #000; }
-.tool-btn { background: #1e1e1e; color: #e3e3e3; border: 1px solid #333; padding: 10px 18px; border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 14px; }
-.tool-btn:hover { background: #2d2d2d; }
+  header { background: #0a8f4f; color: white; padding: 12px; text-align: center; }
+  header.flag { font-size: 28px; }
+  header h1 { font-size: 20px; font-weight: bold; margin: 4px 0; }
+  header p { font-size: 12px; opacity: 0.9; }
 
-  #chat-box { flex: 1; overflow-y: auto; padding: 20px; }
-.msg { display: flex; gap: 12px; margin-bottom: 20px; max-width: 800px; margin: 0 auto 20px auto; }
-.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0; }
-.user.avatar { background: #0a8f4f; color: white; }
-.ai.avatar { background: #0a8f4f; color: white; }
-.bubble { flex: 1; line-height: 1.6; font-size: 15px; background: #1a1a1a; padding: 16px; border-radius: 12px; white-space: pre-wrap; }
+.chat-container { flex: 1; padding: 20px 10px; }
+.chat-box { max-width: 700px; margin: 0 auto; background: white; border-radius: 16px; padding: 20px; min-height: 60vh; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.msg { display: flex; margin-bottom: 16px; }
+.msg.user { justify-content: flex-end; }
+.bubble { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; }
+.user.bubble { background: #0a8f4f; color: white; border-bottom-right-radius: 4px; }
+.ai.bubble { background: #f1f3f4; color: #000; border-bottom-left-radius: 4px; }
 
-.input-area { padding: 16px; border-top: 1px solid #222; }
-.input-wrap { max-width: 800px; margin: 0 auto; display: flex; gap: 10px; background: #1a1a1a; border-radius: 30px; padding: 8px 8px 8px 20px; align-items: center; }
-  #input-box { flex: 1; background: transparent; border: none; color: #e3e3e3; font-size: 15px; outline: none; }
-.mic-btn { background: #0a8f4f; color: white; border: none; border-radius: 24px; padding: 10px 18px; font-weight: bold; cursor: pointer; }
-  #send-btn { background: #0a8f4f; color: white; border: none; border-radius: 24px; padding: 10px 20px; font-weight: bold; cursor: pointer; }
+.input-area { padding: 16px; background: white; border-top: 1px solid #eee; }
+.input-wrap { max-width: 700px; margin: 0 auto; display: flex; gap: 10px; }
+  #input-box { flex: 1; border: 1px solid #ddd; border-radius: 24px; padding: 12px 20px; font-size: 15px; outline: none; }
+  #send-btn { background: #0a8f4f; color: white; border: none; border-radius: 24px; padding: 12px 24px; font-weight: bold; cursor: pointer; font-size: 15px; }
+  #send-btn:active { background: #087a44; }
 </style>
 </head>
 <body>
 
-<div class="tools">
-  <button class="tool-btn" onclick="sendQuick('Chat')">Chat</button>
-  <button class="tool-btn" onclick="sendQuick('Create slides about')">Slides</button>
-  <button class="tool-btn" onclick="sendQuick('Write me a song about')">Song</button>
-  <button class="tool-btn" onclick="sendQuick('Create google sheet for')">Google Sheet</button>
-  <button class="tool-btn" onclick="sendQuick('Help with construction')">Construction</button>
-  <button class="tool-btn" onclick="sendQuick('Farming advice')">Farming</button>
-  <button class="tool-btn" onclick="sendQuick('Business idea')">Business</button>
-</div>
+<header>
+  <div class="flag">🇿🇲</div>
+  <h1>ZAMBIA AI</h1>
+  <p>Your AI Assistant from Zambia | Powered by Groq</p>
+</header>
 
-<div id="chat-box">
-  <div class="msg ai">
-    <div class="avatar">Z</div>
-    <div class="bubble">Hello Christopher! I am Zambia AI Super App. I can do: Chat, Slides, Songs, Sheets, Construction, Farming, Business, Teaching, Government, Banking, Images, Videos, News. Pick a tool above or just talk to me. You can also use voice.</div>
+<div class="chat-container">
+  <div class="chat-box" id="chat-box">
+    <div class="msg ai">
+      <div class="bubble">Hello Christopher! Ask me anything.</div>
+    </div>
   </div>
 </div>
 
 <div class="input-area">
   <div class="input-wrap">
-    <input type="text" id="input-box" placeholder="Ask anything... or use voice">
-    <button class="mic-btn" id="mic-btn">Mic</button>
+    <input type="text" id="input-box" placeholder="Ask Zambia AI...">
     <button id="send-btn">Send</button>
   </div>
 </div>
@@ -59,27 +57,13 @@ const GROQ_API_KEY = "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";
 const chatBox = document.getElementById('chat-box');
 const inputBox = document.getElementById('input-box');
 const sendBtn = document.getElementById('send-btn');
-const micBtn = document.getElementById('mic-btn');
 
 function addMessage(sender, text) {
     const msgDiv = document.createElement('div');
     msgDiv.className = 'msg ' + (sender === 'You'? 'user' : 'ai');
-    msgDiv.innerHTML = '<div class="avatar">' + (sender === 'You'? 'C' : 'Z') + '</div><div class="bubble">' + text + '</div>';
+    msgDiv.innerHTML = '<div class="bubble">' + text + '</div>';
     chatBox.appendChild(msgDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function sendQuick(topic) {
-    inputBox.value = topic;
-    askGroq(topic);
-}
-
-// VOICE
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(SpeechRecognition){
-  const rec = new SpeechRecognition();
-  micBtn.onclick = () => rec.start();
-  rec.onresult = (e) => { inputBox.value = e.results[0][0].transcript; askGroq(inputBox.value); }
 }
 
 async function askGroq(userText) {
@@ -91,19 +75,28 @@ async function askGroq(userText) {
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Authorization": "Bearer " + GROQ_API_KEY, "Content-Type": "application/json" },
+            headers: {
+                "Authorization": "Bearer " + GROQ_API_KEY,
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                model: "llama-3.1-70b-versatile",
+                model: "llama-3.1-8b-instant",
                 messages: [
-                    {role: "system", content: "You are Zambia AI Super App for Christopher. Help with Chat, Slides, Songs, Sheets, Construction, Farming, Business and anything else. Be helpful and detailed."},
+                    {role: "system", content: "You are Zambia AI for Christopher. Be helpful and answer clearly."},
                     {role: "user", content: userText}
-                ]
+                ],
+                temperature: 0.7
             })
         });
+
+        if(!response.ok) throw new Error("API Error");
+
         const data = await response.json();
         addMessage('AI', data.choices[0].message.content);
+
     } catch (error) {
         addMessage('AI', "Sorry, I couldn't get a response. Please try again.");
+        console.log(error);
     }
     sendBtn.disabled = false;
 }
