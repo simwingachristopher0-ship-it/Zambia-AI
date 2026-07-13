@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zambia AI Super App</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Google Sans', 'Segoe UI', sans-serif; }
+    body { background: #131314; color: #e3e3e3; height: 100vh; display: flex; flex-direction: column; }
+    
+  .header { padding: 15px 20px; border-bottom: 1px solid #2e2e2e; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 20px; color: #EF7D00; }
+    
+  .tools { display: flex; gap: 8px; padding: 10px 20px; overflow-x: auto; background: #1e1e1e; }
+  .tool-btn { padding: 8px 14px; background: #2e2e2e; border: none; border-radius: 20px; color: #e3e3e3; cursor: pointer; white-space: nowrap; }
+  .tool-btn:hover { background: #009E60; }
+    
+  .chat { flex: 1; overflow-y: auto; padding: 20px; }
+  .msg { display: flex; gap: 12px; margin-bottom: 20px; max-width: 900px; margin: 0 auto 20px auto; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #009E60; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+  .ai.avatar { background: #EF7D00; }
+  .text { background: #1e1e1e; padding: 14px 18px; border-radius: 12px; line-height: 1.6; }
+    
+  .input-area { padding: 20px; border-top: 1px solid #2e2e2e; }
+  .input-box { max-width: 900px; margin: 0 auto; display: flex; gap: 10px; background: #1e1e1e; padding: 10px; border-radius: 30px; }
+  .input-box input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 16px; }
+  .input-box button { background: #009E60; border: none; color: white; padding: 10px 16px; border-radius: 50%; cursor: pointer; }
+  .notification { position: fixed; top: 20px; right: 20px; background: #EF7D00; padding: 12px 18px; border-radius: 10px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Zambia AI Super App</h1>
+    <div>Powered by Groq</div>
+</div>
+
+<div class="tools">
+    <button class="tool-btn" onclick="setMode('chat')">Chat</button>
+    <button class="tool-btn" onclick="setMode('slides')">Slides</button>
+    <button class="tool-btn" onclick="setMode('song')">Song</button>
+    <button class="tool-btn" onclick="setMode('sheet')">Google Sheet</button>
+    <button class="tool-btn" onclick="setMode('construction')">Construction</button>
+    <button class="tool-btn" onclick="setMode('farming')">Farming</button>
+    <button class="tool-btn" onclick="setMode('business')">Business</button>
+    <button class="tool-btn" onclick="setMode('teacher')">Teacher</button>
+    <button class="tool-btn" onclick="setMode('student')">Student</button>
+    <button class="tool-btn" onclick="setMode('gov')">Government</button>
+    <button class="tool-btn" onclick="setMode('bank')">Bank</button>
+    <button class="tool-btn" onclick="setMode('image')">Generate Image</button>
+    <button class="tool-btn" onclick="setMode('video')">Generate Video</button>
+    <button class="tool-btn" onclick="setMode('news')">News Alert</button>
+</div>
+
+<div class="chat" id="chatBox">
+    <div class="msg ai">
+        <div class="avatar">Z</div>
+        <div class="text">Hello Christopher! I am Zambia AI Super App.
+        I can do: Chat, Slides, Songs, Sheets, Construction, Farming, Business, Teaching, Government, Banking, Images, Videos, News.
+        Pick a tool above or just talk to me. You can also use voice.</div>
+    </div>
+</div>
+
+<div class="input-area">
+    <div class="input-box">
+        <input type="text" id="userInput" placeholder="Ask anything... or use voice">
+        <button onclick="startVoice()">Mic</button>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+const API_KEY = "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";
+let currentMode = "chat";
+let chatHistory = [{role: "system", content: "You are Zambia AI Super App. You help with everything: slides, songs, sheets, construction, farming, business, teaching, government, banking, images, videos. Reply smart, fast, and in user's language. Be proud of Zambia."}];
+
+function setMode(mode) {
+    currentMode = mode;
+    showNotification(`Switched to ${mode} mode`);
+}
+
+function showNotification(text) {
+    const n = document.getElementById('notification');
+    n.innerText = text;
+    n.style.display = 'block';
+    setTimeout(() => n.style.display = 'none', 3000);
+}
+
+function addMessage(text, sender) {
+    const box = document.getElementById('chatBox');
+    box.innerHTML += `
+        <div class="msg ${sender}">
+            <div class="avatar">${sender==='ai'?'Z':'You'}</div>
+            <div class="text">${text}</div>
+        </div>
+    `;
+    box.scrollTop = box.scrollHeight;
+}
+
+// VOICE
+function startVoice() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-ZM';
+    recognition.onresult = (e) => {
+        document.getElementById('userInput').value = e.results[0][0].transcript;
+        sendMessage();
+    }
+    recognition.start();
+}
+
+function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-ZM';
+    speechSynthesis.speak(utterance);
+}
+
+// MAIN AI CALL
+async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+    if (!message) return;
+    addMessage(message, 'user');
+    chatHistory.push({role: "user", content: `[Mode: ${currentMode}] ${message}`});
+    input.value = "";
+
+    addMessage("Thinking...", 'ai');
+
+    // TEXT AI via Groq
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}`},
+        body: JSON.stringify({
+            model: "llama-3.1-70b-versatile",
+            messages: chatHistory,
+            temperature: 0.7
+        })
+    });
+    const data = await res.json();
+    document.querySelectorAll('.text')[document.querySelectorAll('.text').length-1].innerText = "Thinking..."; // remove loading
+    const reply = data.choices[0].message.content;
+    
+    document.querySelectorAll('.text')[document.querySelectorAll('.text').length-1].innerText = reply;
+    chatHistory.push({role: "assistant", content: reply});
+    
+    // Voice reply
+    speak(reply);
+    
+    // Tool logic examples
+    if(currentMode === 'slides') showNotification("Slide outline created. Copy to Google Slides");
+    if(currentMode === 'image') showNotification("To generate images, connect DALL-E or Stable Diffusion API next");
+    if(currentMode === 'video') showNotification("To generate videos, connect Runway or Pika API next");
+    if(currentMode === 'news') showNotification("New: Check news.zm for latest Zambia news");
+}
+</script>
+</body>
+</html>
