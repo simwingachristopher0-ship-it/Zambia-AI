@@ -1,68 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zambia AI</title>
+<title>Christopher's AI - Zambia AI</title>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-  body { background: linear-gradient(to bottom, #ff8c00, #fff); min-height: 100vh; }
-  header { background: #0a8f4f; color: white; text-align: center; padding: 15px; }
-  header h1 { font-size: 22px; }
-  header p { font-size: 12px; opacity: 0.9; }
- .chat { max-width: 700px; margin: 20px auto; background: white; border-radius: 15px; padding: 20px; min-height: 65vh; }
- .msg { margin-bottom: 15px; }
- .user { text-align: right; }
- .user.bubble { background: #0a8f4f; color: white; display: inline-block; padding: 12px 16px; border-radius: 18px; }
- .ai.bubble { background: #f1f1f1; color: #000; display: inline-block; padding: 12px 16px; border-radius: 18px; }
- .input { display: flex; gap: 10px; max-width: 700px; margin: 0 auto 20px auto; padding: 0 10px; }
-  #input-box { flex: 1; padding: 14px 20px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
-  #send { background: #0a8f4f; color: white; border: none; padding: 14px 25px; border-radius: 25px; font-weight: bold; }
+  body { margin:0; font-family: Arial; background: linear-gradient(orange, green); }
+.header { background:#0a7a3d; color:white; padding:12px; text-align:center; }
+.header h1 { margin:0; font-size:22px; }
+.header p { margin:0; font-size:12px; }
+.chat { height:65vh; overflow-y:auto; background:white; padding:10px; border-radius:10px; margin:10px; }
+.msg { margin:8px 0; padding:8px 12px; border-radius:12px; max-width:80%; }
+.user { background:#e6f0ff; margin-left:auto; text-align:right; }
+.ai { background:#f1f1f1; margin-right:auto; }
+.input-area { display:flex; padding:10px; gap:8px; }
+  input { flex:1; padding:10px; border-radius:20px; border:1px solid #ccc; }
+  button { background:#0a7a3d; color:white; border:none; padding:10px 18px; border-radius:20px; }
+.settings { padding:10px; color:white; font-size:12px; }
 </style>
 </head>
 <body>
 
-<header>
+<div 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="header">
   <h1>🇿🇲 ZAMBIA AI</h1>
-  <p>Your AI Assistant from Zambia | Powered by Groq</p>
-</header>
+  <p>Christopher's AI | Powered by Groq</p>
+</div>
+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
+<div class="chat" id="chat"></div>
 
-<div class="chat" id="chat">
-  <div class="msg ai"><div class="bubble">Hello Christopher! Ask me anything.</div></div>
+<div class="input-area">
+  <input id="userInput" placeholder="Ask Christopher's AI...">
+  <button onclick="sendMsg()">Send</button>
 </div>
 
-<div class="input">
-  <input type="text" id="input-box" placeholder="Ask Zambia AI...">
-  <button id="send">Send</button>
+<div class="settings">
+  <label><input type="checkbox" id="voice"> Voice Reply</label>
+  <label><input type="checkbox" id="music"> Music Mode</label>
+  <button onclick="connectTV()">Connect to TV</button>
 </div>
 
 <script>
-const API = "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";
-const chat = document.getElementById('chat');
+let chatHistory = JSON.parse(localStorage.getItem("zambiaAI")) || [];
 
-function add(who, txt){
-  chat.innerHTML += `<div class="msg ${who}"><div class="bubble">${txt}</div></div>`;
-  chat.scrollTop = chat.scrollHeight;
-}
-
-async function ask(t){
-  if(!t) return;
-  add('user', t);
-  document.getElementById('input-box').value = "";
-
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {"Authorization": "Bearer " + API, "Content-Type": "application/json"},
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      messages: [{role: "user", content: t}]
-    })
+function renderChat(){
+  let chatDiv = document.getElementById("chat");
+  chatDiv.innerHTML = "";
+  chatHistory.forEach(m => {
+    chatDiv.innerHTML += `<div class="msg ${m.role}">${m.text}</div>`;
   });
-  const data = await res.json();
-  add('ai', data.choices[0].message.content);
+  chatDiv.scrollTop = chatDiv.scrollHeight;
 }
 
-document.getElementById('send').onclick = () => ask(document.getElementById('input-box').value);
+async function sendMsg(){
+  let input = document.getElementById("userInput");
+  let text = input.value;
+  if(!text) return;
+
+  chatHistory.push({role:"user", text});
+  renderChat();
+  input.value = "";
+
+  let reply = await askAI(text);
+
+  chatHistory.push({role:"ai", text:reply});
+  localStorage.setItem("zambiaAI", JSON.stringify(chatHistory));
+  renderChat();
+
+  if(document.getElementById("voice").checked){
+    let speech = new SpeechSynthesisUtterance(reply);
+    speech.lang = 'en-ZA';
+    speechSynthesis.speak(speech);
+  }
+}
+
+async function askAI(prompt){
+  let apiKey = localStorage.getItem("groq_key"); // <-- KEY COMES FROM HERE
+  if(!apiKey) return "Please add your Groq key first. Open console and run: localStorage.setItem('groq_key','your_key_here')";
+
+  try {
+    let res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + apiKey // <-- USES YOUR SAVED KEY
+      },
+      body:JSON.stringify({
+        model:"llama-3.1-70b-versatile",
+        messages:[{role:"user", content:prompt}]
+      })
+    });
+    let data = await res.json();
+    return data.choices[0].message.content;
+  } catch(e){
+    return "Sorry, I couldn't get a response. Please try again.";
+  }
+}
+
+function connectTV(){
+  alert("Open this same website on your Smart TV browser");
+}
+
+document.getElementById("music").onchange = function(){
+  if(this.checked) alert("Music Mode: Type 'play music' to search YouTube");
+}
+
+renderChat();
 </script>
 </body>
 </html>
+
